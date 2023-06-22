@@ -1,0 +1,92 @@
+{
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "editor.rulers": [100, 120],
+    "editor.trimAutoWhitespace": true,
+    "editor.formatOnSaveMode": "file",
+
+    "files.trimTrailingWhitespace": true,
+    "files.trimFinalNewlines": true,
+    "files.associations": {
+        ".config": "shellscript",
+        ".gitignore": "gitignore",
+        ".vscode/*.json": "jsonc",
+        "*.txt": "plaintext",
+        "requirements*.txt": "pip-requirements",
+        "setup.cfg": "ini"
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/__pycache__": true
+    },
+
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "**/.venv": true,
+        "**/__pycache__": true,
+        "**/venv": true
+    },
+
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
+    },
+    "ruff.args": ["--line-length=110", "--extend-ignore=F401,F841,E501"],
+    "ruff.fixAll": true,
+    "ruff.organizeImports": true,
+    "python.formatting.provider": "none",
+    "black-formatter.args": ["--line-length=110"],
+    "python.analysis.diagnosticMode": "openFilesOnly",
+    "python.analysis.autoFormatStrings": true,
+    "python.analysis.fixAll": ["source.convertImportFormat"],
+    "python.analysis.extraPaths": [],
+    "python.linting.enabled": false,
+
+    "[json]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll.sortJSON": false
+        },
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4
+    },
+    "[jsonc]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll.sortJSON": false
+        },
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4
+    },
+    "json.format.keepLines": true,
+
+    "[toml]": {
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2
+    },
+
+    "[markdown]": {
+        "files.trimTrailingWhitespace": false,
+        "files.trimFinalNewlines": true
+    },
+
+    "[makefile]": {
+        "editor.insertSpaces": false,
+        "editor.tabSize": 8
+    },
+
+    "[yaml]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2
+    }
+}
