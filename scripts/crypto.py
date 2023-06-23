@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import ClassVar, List, Optional, Tuple
 
 from Cryptodome.Cipher import AES
+from Cryptodome.Cipher._mode_eax import EaxMode
 from Cryptodome.Hash import SHA256
 from Cryptodome.Protocol.KDF import scrypt
 from modules import shared
@@ -117,34 +118,35 @@ class PNGCryptor:
         self.passhash = None
 
     def _salt(self) -> bytes:
-        """Generate a random salt and hash it."""
-        return SHA256.new(random_bytes(256)).digest()
+        """Get random salt for scrypt."""
+        return random_bytes(32)
 
-    def get_key(self, salt: bytes) -> bytes:
-        return scrypt(self.passhash, salt=salt, key_len=self.bits // 8, N=2**SCRYPT_N, r=8, p=1)
+    def get_key_nonce(self, salt: bytes) -> Tuple[bytes, bytes]:
+        if len(salt) != 32:
+            raise ValueError("Salt must be 32 bytes long!")
+        key, nonce = scrypt(
+            self.passhash, salt=salt, key_len=self.bits // 128, N=2**SCRYPT_N, r=8, p=1, num_keys=2
+        )
+        return key, nonce
 
-    def new_key(self) -> Tuple[bytes, bytes]:
-        nonce = SHA256.new(random_bytes(256)).digest()
-        return self.get_key(nonce), nonce
-
-    def encrypt(self, data: bytes, tuple: bool = False) -> bytes | Tuple[bytes, bytes, bytes]:
+    def encrypt(self, data: bytes) -> bytes | Tuple[bytes, bytes, bytes]:
         """Encrypt data using the selected mode."""
-        key, nonce = self.new_key()
-        cipher = AES.new(key=key, mode=self.mode, nonce=nonce)
+        salt = self._salt()
+        key, nonce = self.get_key_nonce(salt)
+        cipher: EaxMode = AES.new(key=key, mode=self.mode, nonce=nonce, mac_len=16)
         ciphertext, tag = cipher.encrypt_and_digest(data)
-        return (nonce, tag, ciphertext) if tuple else bytes(nonce + tag + ciphertext)
+        return self.merge_salt_tag(salt, tag, ciphertext)
+
+    def merge_salt_tag(self, salt: bytes, tag: bytes, data: bytes) -> bytes:
+        return bytes(salt + tag + data)
 
     def decrypt(self, data: bytes) -> bytes:
         """Decrypt data using the selected mode."""
-        nonce, tag, ciphertext = self.split_nonce_tag(data)
-        return self.decrypt_tuple(nonce, tag, ciphertext)
-
-    def decrypt_tuple(self, nonce: bytes, tag: bytes, ciphertext: bytes):
-        """Decrypt data using the selected mode."""
-        key = self.get_key(nonce)
-        cipher = AES.new(key=key, mode=self.mode, nonce=nonce, mac_len=16)
+        salt, tag, ciphertext = self.split_salt_tag(data)
+        key, nonce = self.get_key_nonce(salt)
+        cipher: EaxMode = AES.new(key=key, mode=self.mode, nonce=nonce, mac_len=16)
         return cipher.decrypt_and_verify(ciphertext, tag)
 
-    def split_nonce_tag(self, data: bytes) -> Tuple[bytes, bytes, bytes]:
-        """Split the nonce and tag from the ciphertext."""
+    def split_salt_tag(self, data: bytes) -> Tuple[bytes, bytes, bytes]:
+        """Split the salt and tag from the ciphertext."""
         return data[:32], data[32:48], data[48:]

@@ -126,7 +126,7 @@ def prepare_data(
     # e.g. "encrypted_pngcomp_scrypt15-aes-256-eax__"
     signature = f"encrypted_{mode.name}_{comp.name}_{cryptor.signature}__".encode("utf-8")
     plaintext = comp.compress(infotexts.encode("utf-8"))  # compress is a no-op for info mode
-    ciphertext = cryptor.encrypt(plaintext)  # encrypt plaintext
+    ciphertext = cryptor.encrypt(plaintext, tuple=False)  # encrypt plaintext
     ciphertext_len = f"{len(ciphertext) * 8:032b}".encode("utf-8")
     return PixelBitArray(signature + ciphertext_len + ciphertext)
 
@@ -153,10 +153,8 @@ def add_data(
             index = ypos * width + xpos  # get current pixel number
             if mode == StealthEnc.RGB:
                 index = index * 3  # RGB mode is 3bpp so multiply index pos
-
             if index >= len(binary_data):
                 break  # break if we've reached the end of the data
-
             if mode == StealthEnc.RGB:
                 pixels[xpos, ypos] = binary_data.rgb(pixels[xpos, ypos], index)
             else:
@@ -184,7 +182,6 @@ def add_pngcrypto(params: "ImageSaveParams"):
 
 def read_info_from_image_encrypted(image: Image.Image):
     geninfo, items = original_read_info_from_image(image)
-    # possible_sigs = {'encrypted_pnginfo', 'encrypted_pngcomp', 'encrypted_rgbinfo', 'encrypted_rgbcomp'}
 
     # respecting original pnginfo
     if geninfo is not None:
