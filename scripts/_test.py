@@ -23,35 +23,3 @@ if unpacked_ctxt != ciphertext:
     raise ValueError("ciphertext and unpacked ciphertext no matchy")
 if unpacked_sig != signature.decode().rstrip("__"):
     raise ValueError("signature and unpacked signature no matchy")
-
-
-if False:
-    # fmt: off
-    int_array = [
-    0, 1, 1, 0, 1, 0, 0, 0,
-    0, 1, 1, 0, 1, 1, 1, 1,
-    0, 1, 1, 0, 1, 1, 0, 0,
-    0, 1, 1, 1, 1, 0, 0, 1,
-    0, 0, 1, 0, 0, 0, 0, 0,
-    0, 1, 1, 0, 0, 1, 1, 0,
-    0, 1, 1, 1, 0, 1, 0, 1,
-    0, 1, 1, 0, 0, 0, 1, 1,
-    0, 1, 1, 0, 1, 0, 1, 1,
-    0, 1, 1, 0, 1, 0, 0, 1,
-    0, 1, 1, 0, 1, 1, 1, 0,
-    0, 1, 1, 0, 0, 1, 1, 1,
-    0, 0, 1, 0, 0, 0, 0, 0,
-    0, 1, 1, 0, 0, 0, 1, 0,
-    0, 1, 1, 0, 1, 0, 0, 1,
-    0, 1, 1, 0, 1, 1, 1, 0,
-    0, 1, 1, 0, 0, 1, 1, 1,
-    0, 1, 1, 0, 1, 1, 0, 0,
-    0, 1, 1, 0, 0, 1, 0, 1,
-]
-    # fmt: on
-
-    # int_array = "".join([str(x) for x in int_array])
-
-    bytearray(
-        int("".join([str(x) for x in int_array[i : i + 8]]), 2) for i in range(0, len(int_array), 8)
-    ).decode("utf-8", errors="ignore")
