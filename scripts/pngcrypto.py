@@ -126,7 +126,7 @@ def prepare_data(
     # e.g. "encrypted_pngcomp_scrypt15-aes-256-eax__"
     signature = f"encrypted_{mode.name}_{comp.name}_{cryptor.signature}__".encode("utf-8")
     plaintext = comp.compress(infotexts.encode("utf-8"))  # compress is a no-op for info mode
-    ciphertext = cryptor.encrypt(plaintext, tuple=False)  # encrypt plaintext
+    ciphertext = cryptor.encrypt(plaintext)  # encrypt plaintext
     ciphertext_len = f"{len(ciphertext) * 8:032b}".encode("utf-8")
     return PixelBitArray(signature + ciphertext_len + ciphertext)
 
