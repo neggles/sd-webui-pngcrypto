@@ -1,5 +1,9 @@
 # sd-webui-pngcrypto
 
+# *HEY! DON'T USE THIS! I MADE IT TO PROVE A POINT!*
+
+it's also wildly untested...
+
 This extension embeds image generation metadata into the (unused) alpha channel of a PNG generated in [stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui), and as a bonus,
 encrypts its metadata with AES-256-EAX encryption.
 
