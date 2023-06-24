@@ -3,8 +3,6 @@
 line-length = 110
 target-version = ['py310']
 
-[tool.mypy]
-plugins = "disnake.ext.mypy_plugin"
 
 [tool.ruff]
 line-length = 110
@@ -14,11 +12,11 @@ ignore = ['F841', 'F401', 'E501']
 [tool.ruff.isort]
 combine-as-imports = true
 force-wrap-aliases = true
-known-first-party = ["scripts"]
+known-first-party = ["scripts", "crypto"]
 known-third-party = ["modules", "launch"]
 
+
 [tool.pyright]
-pythonVersion = "3.10"
-extraPaths = ["../../", "../../repositories/*"]
+exclude = ["../../venv"]
 venvPath = "../../"
 venv = "venv"

@@ -1,119 +1,18 @@
 import logging
 import warnings
-from dataclasses import InitVar, dataclass
-from enum import Enum
-from gzip import compress, decompress
-from typing import TYPE_CHECKING, List, SupportsIndex, Tuple
+from typing import List
 
 import gradio as gr
 from gradio import processing_utils
 from modules import generation_parameters_copypaste, images, script_callbacks, shared
 from PIL import Image, ImageOps
 
-if TYPE_CHECKING:
-    from modules.script_callbacks import ImageSaveParams
-
-from crypto import PNGCryptor
+from .crypto import MAX_LEN, CompType, PixelBitArray, PNGCryptor, StealthEnc
 
 # create logger
 logger = logging.getLogger(__name__)
 # create cryptor object
 cryptor = PNGCryptor("AES-256-EAX")
-
-
-class StealthEnc(str, Enum):
-    png = "Alpha channel"
-    rgb = "RGB channels"
-    # Recklessly abusing that the first defined name of a value is what .name always returns
-    RGBA = "Alpha channel"
-    RGB = "RGB channels"
-
-
-class CompType(str, Enum):
-    info = "No compression"
-    comp = "Gzip (default)"
-    zstd = "Zstandard (experimental)"
-    # further enum abuse!
-    GZIP = "Gzip (default)"
-    ZSTD = "Zstandard (experimental)"
-
-    # a method? on MYYYY enum? it's more likely than you think!
-    def compress(self, data: bytes) -> bytes:
-        if self == CompType.info:
-            return data
-        elif self == CompType.GZIP:
-            return compress(data)
-        elif self == CompType.zstd:
-            raise NotImplementedError("ZSTD compression is not implemented yet")
-        # should never happen
-        raise ValueError(f"Unknown compression type {self.value}")
-
-    def decompress(self, data: bytes) -> bytes:
-        if self == CompType.info:
-            return data
-        elif self == CompType.GZIP:
-            return decompress(data)
-        elif self == CompType.zstd:
-            raise NotImplementedError("ZSTD compression is not implemented yet")
-        # should never happen
-        raise ValueError(f"Unknown compression type {self.value}")
-
-
-@dataclass
-class PixelBitArray:
-    """This is cursed.
-    It's a bytearray that you can index into the individual bits of like they were a list,
-    and its init method takes a bytes object.
-    Also there's a from_int_array class method that takes a list of ints/bools.
-    Makes for easier conversion between "list of ints" and "array of bytes" and vice versa.
-    """
-
-    data: InitVar[bytes] = b""
-
-    def __post_init__(self, data: bytes):
-        self._data = bytearray(data)
-
-    def __getitem__(self, __key: SupportsIndex) -> int:
-        return (self._data[__key // 8] >> (7 - __key % 8)) & 1
-
-    def __setitem__(self, __key: SupportsIndex, __value: SupportsIndex):
-        self._data[__key // 8] |= (__value & 1) << (7 - __key % 8)
-        pass
-
-    def __len__(self) -> int:
-        return len(self._data) * 8
-
-    def __repr__(self) -> str:
-        return f"PixelBitArray({self._data})"
-
-    def __str__(self) -> str:
-        return self._data.decode(encoding="utf-8")
-
-    def rgba(self, pixel: Tuple[int, int, int, int], index: int) -> Tuple[int, int, int]:
-        # XOR the alpha channel's LSB with the bit at idx and return the pixel
-        return tuple(pixel[0], pixel[1], pixel[2], pixel[3] ^ self[index])
-
-    def rgb(self, pixel: Tuple[int, int, int], index: int) -> Tuple[int, int, int]:
-        # XOR the R, G and B channels' LSBs with the bits at idx:idx+2 and return the pixel
-        return tuple(pixel[i] ^ self[index + i] for i in range(3))
-
-    def decode(self, errors="ignore") -> str:
-        return self._data.decode(encoding="utf-8", errors=errors)
-
-    def get_meta(self) -> Tuple[str, int, int]:
-        sig, trailer = self.decode().split("__", 1)
-        offset = len(sig) + 2 + 32  # 2 for the __, 32 for the length
-        payload_bytes = int(trailer[:32], 2) // 8
-        return sig, offset, payload_bytes
-
-    def unpack(self) -> Tuple[str, bytes]:
-        sig, offset, payload_bytes = self.get_meta()
-        payload = self._data[offset : offset + payload_bytes]
-        return sig, bytes(payload)
-
-    @classmethod
-    def from_int_array(cls, data: list[int]) -> "PixelBitArray":
-        return cls(bytes(int("".join([str(x) for x in data[i : i + 8]]), 2) for i in range(0, len(data), 8)))
 
 
 def prepare_data(
@@ -131,7 +30,7 @@ def prepare_data(
 
 
 def add_data(
-    params: "ImageSaveParams",
+    params: script_callbacks.ImageSaveParams,
     cryptor: PNGCryptor,
     mode: StealthEnc = StealthEnc.RGBA,
     comp: CompType = CompType.GZIP,
@@ -162,7 +61,7 @@ def add_data(
             break  # break if we've reached the end of the data
 
 
-def add_pngcrypto(params: "ImageSaveParams"):
+def add_pngcrypto(params: script_callbacks.ImageSaveParams):
     global cryptor
     pngcrypto_enabled = shared.opts.data.get("pngcrypto", True)
     pngcrypto_cipher = shared.opts.data.get("pngcrypto_cipher", PNGCryptor.DEFAULT_MODE)
@@ -186,7 +85,6 @@ def read_info_from_image_encrypted(image: Image.Image):
     if geninfo is not None:
         return geninfo, items
 
-    MAX_LEN = 16384 * 8  # 16k chars is *plenty* so we'll cap it there
     mode = StealthEnc.RGBA if image.mode == "RGBA" else StealthEnc.RGB
 
     # trying to read encrypted pnginfo
@@ -218,7 +116,7 @@ def read_info_from_image_encrypted(image: Image.Image):
         # Ask it to unpack itself
         unpacked_sig, unpacked_ctxt = pixel_bits.unpack()
         # Split the signature into its parts
-        magic, encoding, comp, encryption = unpacked_sig.decode("utf-8").split("_", 3)
+        magic, encoding, comp, enctype = unpacked_sig.decode("utf-8").split("_", 3)
 
         if magic != "encrypted":
             raise ValueError(f"Invalid signature: {magic}")
@@ -226,7 +124,7 @@ def read_info_from_image_encrypted(image: Image.Image):
             warnings.warn(f"Invalid encoding: {encoding}. Expected {mode.name}, will try anyway...")
 
         comp = CompType(comp.decode("utf-8"))
-        kdf, cipher, bits, mode = encryption.decode("utf-8").split("-")
+        kdf, cipher, bits, mode = enctype.decode("utf-8").split("-")
         if kdf != "scrypt15":
             raise ValueError(f"Unsupported KDF: {kdf}")
 

@@ -3,10 +3,6 @@
         {
             "name": "sd-webui-pngcrypto",
             "path": "."
-        },
-        {
-            "name": "stable-diffusion-webui",
-            "path": "../../"
         }
     ],
     "settings": {
@@ -21,15 +17,11 @@
 
         "json.format.keepLines": true,
 
-        "python.formatting.provider": "none",
-
-        "ruff.fixAll": true,
-        "ruff.organizeImports": true,
-        "ruff.codeAction.fixViolation": {
-            "enable": true
+        "[python]": {
+            "editor.formatOnSave": false,
+            "editor.defaultFormatter": "ms-python.black-formatter"
         },
-        "ruff.codeAction.disableRuleComment": {
-            "enable": true
-        }
+        "python.formatting.provider": "none",
+        "ruff.run": "onSave"
     }
 }

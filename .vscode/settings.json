@@ -42,6 +42,7 @@
         }
     },
     "ruff.args": ["--line-length=110", "--extend-ignore=F401,F841,E501"],
+
     "python.formatting.provider": "none",
     "black-formatter.args": ["--line-length=110"],
     "python.analysis.diagnosticMode": "openFilesOnly",
@@ -49,6 +50,7 @@
     "python.analysis.fixAll": ["source.convertImportFormat"],
     "python.linting.enabled": false,
 
+    "python.analysis.userFileIndexingLimit": 4000,
     "python.analysis.extraPaths": ["../../", "../../repositories/*"],
 
     "[json]": {

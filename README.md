@@ -1,15 +1,13 @@
 # sd-webui-pngcrypto
 
-# *HEY! DON'T USE THIS! I MADE IT TO PROVE A POINT!*
-
-it's also wildly untested...
-
 This extension embeds image generation metadata into the (unused) alpha channel of a PNG generated in [stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui), and as a bonus,
 encrypts its metadata with AES-256-EAX encryption.
 
 **Will not work for JPEG images.** Untested on webp, should work in theory but who knows.
 
 ---
+
+### This is mostly untested but it should work, and unlike [this nonsense](https://github.com/etherealxx/promptlocker) I'm not asking you to just trust that I got it right.
 
 *Please note that as this data is embedded in the image pixels, it is not visible in an EXIF data viewer.*  
 ***This will not strip the text metadata from the image, nor will it encrypt it. You will have to clean the text metadata yourself.***

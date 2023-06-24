@@ -1,0 +1,2 @@
+pillow>=9.5.0
+pycryptodomex>=3.18.0
