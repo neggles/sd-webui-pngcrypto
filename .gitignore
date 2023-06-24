@@ -142,3 +142,6 @@ dmypy.json
 # misc and temp
 /misc/
 /temp/
+
+# password save file
+/scripts/.*
