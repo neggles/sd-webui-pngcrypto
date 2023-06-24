@@ -16,3 +16,9 @@ combine-as-imports = true
 force-wrap-aliases = true
 known-first-party = ["scripts"]
 known-third-party = ["modules", "launch"]
+
+[tool.pyright]
+pythonVersion = "3.10"
+extraPaths = ["../../", "../../repositories/*"]
+venvPath = "../../"
+venv = "venv"

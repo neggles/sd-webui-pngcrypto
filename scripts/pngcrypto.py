@@ -1,6 +1,6 @@
 import logging
 import warnings
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass
 from enum import Enum
 from gzip import compress, decompress
 from typing import TYPE_CHECKING, List, SupportsIndex, Tuple
@@ -25,7 +25,6 @@ class StealthEnc(str, Enum):
     png = "Alpha channel"
     rgb = "RGB channels"
     # Recklessly abusing that the first defined name of a value is what .name always returns
-    # why? just cause it looks nicer. I'm not super proud of this.
     RGBA = "Alpha channel"
     RGB = "RGB channels"
 

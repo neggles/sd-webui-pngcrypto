@@ -1,0 +1,35 @@
+{
+    "folders": [
+        {
+            "name": "sd-webui-pngcrypto",
+            "path": "."
+        },
+        {
+            "name": "stable-diffusion-webui",
+            "path": "../../"
+        }
+    ],
+    "settings": {
+        "files.associations": {
+            ".config": "shellscript",
+            ".gitignore": "gitignore",
+            ".vscode/*.json": "jsonc",
+            "*.txt": "plaintext",
+            "requirements*.txt": "pip-requirements",
+            "setup.cfg": "ini"
+        },
+
+        "json.format.keepLines": true,
+
+        "python.formatting.provider": "none",
+
+        "ruff.fixAll": true,
+        "ruff.organizeImports": true,
+        "ruff.codeAction.fixViolation": {
+            "enable": true
+        },
+        "ruff.codeAction.disableRuleComment": {
+            "enable": true
+        }
+    }
+}
