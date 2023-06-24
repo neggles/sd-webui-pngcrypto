@@ -21,6 +21,8 @@ It will show up in the PNG info tab in the webui. Extension auto-activates and r
 Based on my fork of @ashen-sensored's [sd_webui_stealth_pnginfo](https://github.com/ashen-sensored/sd_webui_stealth_pnginfo)
 which you can find [here](https://github.com/neggles/sd-webui-stealth-pnginfo). 
 
+**n.b. this extension will conflict with the stealth pnginfo extension, enable one or the other but not both.**
+
 <br/>
 
 <sub>I'm sorry, ashen ._.</sub>
